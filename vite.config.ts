@@ -1,6 +1,14 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+
+import socketVitePlugin from "$lib/server/socketVitePlugin";
 
 export default defineConfig({
-	plugins: [sveltekit()]
+  server: {
+    port: 3000
+  },
+  plugins: [
+    sveltekit(),
+    socketVitePlugin
+  ]
 });
