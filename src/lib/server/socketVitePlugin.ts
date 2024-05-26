@@ -1,6 +1,6 @@
 import { type ViteDevServer } from "vite";
 
-import { injectSocketIO } from "$lib/server/socket";
+import { injectSocketIO } from "./socket";
 
 export default {
   name: "socket.io",
