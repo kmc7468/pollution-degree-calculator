@@ -36,7 +36,10 @@
 
       setInterval(() => {
         context?.drawImage(video, 0, 0, width, height);
-        webSocket.emit("frame", dummyCanvas.toDataURL("image/jpeg"));
+        webSocket.emit("frame", {
+          image: dummyCanvas.toDataURL("image/jpeg"),
+          timestamp: Date.now(),
+        });
       }, 1000 / frameRate);
     });
     video.play();
@@ -55,14 +58,26 @@
     canvas.height = settings.height;
 
     const context = canvas.getContext("2d");
-    context?.translate(settings.width, 0);
-    context?.scale(-1, 1);
+    // context?.translate(settings.width, 0);
+    // context?.scale(-1, 1);
 
-    webSocket.on("yolo", (data: string) => {
+    webSocket.on("yolo", (data: { image: string, objects: { x1: number, x2: number, y1: number, y2: number, score: number, label: string }[], timestamp: number, throughput: number }) => {
       const image = new Image();
-      image.src = data;
+      image.src = data.image;
       image.onload = () => {
-        context?.drawImage(image, 0, 0, canvas.width, canvas.height);
+        context!.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        context!.strokeStyle = "#00ff00";
+        context!.lineWidth = 2;
+        context!.font = "16px Arial";
+        for (const object of data.objects) {
+          context!.strokeRect(object.x1 * canvas.width, object.y1 * canvas.height, (object.x2 - object.x1) * canvas.width, (object.y2 - object.y1) * canvas.height);
+          context!.fillText(`${object.label} (${(object.score * 100).toFixed(2)}%)`, object.x1 * canvas.width, object.y1 * canvas.height - 5);
+        }
+
+        const delay = Date.now() - data.timestamp;
+        context!.fillText(`Delay: ${delay}ms`, 10, 20);
+        context!.fillText(`Throughput: ${data.throughput.toFixed(2)} FPS`, 10, 40);
       };
     });
   });

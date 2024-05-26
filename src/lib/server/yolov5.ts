@@ -106,7 +106,7 @@ export const detect = async (model: tf.GraphModel, data: string) => {
 
   const result = [];
   for (let i = 0; i < numDetections; ++i) {
-    const [y1, x1, y2, x2] = boxes[0][i];
+    const [x1, y1, x2, y2] = boxes[0][i];
     const score = scores[0][i];
     const label = cocoNames[classes[0][i]];
 
