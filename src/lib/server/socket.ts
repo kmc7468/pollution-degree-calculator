@@ -5,6 +5,11 @@ import { Server } from "socket.io";
 export const injectSocketIO = (server: http.Server | http2.Http2SecureServer) => {
   const io = new Server(server);
   io.on("connection", (socket) => {
-    // TODO
+    socket.on("start", (data) => {
+      console.log(data);
+    });
+    socket.on("frame", (data: string) => {
+      socket.emit("yolo", data); // TODO
+    });
   });
 };
