@@ -63,6 +63,7 @@
       target: document.body,
     });
     let running = false;
+    let lastAddedTime = 0;
 
     webSocket.on("yolo", async (data: { image: string, objects: { x1: number, x2: number, y1: number, y2: number, score: number, label: string }[], timestamp: number, throughput: number }) => {
       if (running) {
@@ -93,8 +94,9 @@
 
         context!.fillText(new Date(data.timestamp).toISOString(), 10, canvas.height - 20);
 
-        if (hasObject) {
+        if (hasObject && Date.now() - lastAddedTime >= 1000) {
           list.addItem(canvas.toDataURL("image/jpeg"));
+          lastAddedTime = Date.now();
         }
 
         const delay = Date.now() - data.timestamp;
