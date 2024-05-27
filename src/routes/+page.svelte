@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  import List from "$lib/List.svelte";
   import { webSocket } from "$lib/webSocket";
 
   const startCamera = async () => {
@@ -54,14 +55,15 @@
     const settings = await startCamera();
 
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const context = canvas.getContext("2d");
     canvas.width = settings.width;
     canvas.height = settings.height;
 
-    const context = canvas.getContext("2d");
-    // context?.translate(settings.width, 0);
-    // context?.scale(-1, 1);
-
+    const list = new List({
+      target: document.body,
+    });
     let running = false;
+
     webSocket.on("yolo", async (data: { image: string, objects: { x1: number, x2: number, y1: number, y2: number, score: number, label: string }[], timestamp: number, throughput: number }) => {
       if (running) {
         return;
@@ -71,7 +73,7 @@
 
       const image = new Image();
       image.src = data.image;
-      image.onload = async () => {
+      image.onload = () => {
         context!.drawImage(image, 0, 0, canvas.width, canvas.height);
 
         context!.strokeStyle = "#00ff00";
@@ -89,17 +91,15 @@
           hasObject = true;
         }
 
+        context!.fillText(new Date(data.timestamp).toISOString(), 10, canvas.height - 20);
+
+        if (hasObject) {
+          list.addItem(canvas.toDataURL("image/jpeg"));
+        }
+
         const delay = Date.now() - data.timestamp;
         context!.fillText(`Delay: ${delay}ms`, 10, 20);
         context!.fillText(`Throughput: ${data.throughput.toFixed(2)} FPS`, 10, 40);
-
-        if (hasObject) {
-          const gptResult = await fetch("/api/gpt", {
-            method: "POST",
-            body: data.image,
-          });
-          console.log(await gptResult.text());
-        }
 
         running = false;
       };
