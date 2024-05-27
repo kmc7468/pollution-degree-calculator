@@ -4,6 +4,8 @@
   import List from "$lib/List.svelte";
   import { webSocket } from "$lib/webSocket";
 
+  let throughput = 0;  
+
   const startCamera = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
@@ -25,6 +27,8 @@
       height,
       frameRate,
     });
+  
+    throughput = frameRate;
 
     const video = document.getElementById("video") as HTMLVideoElement;
     const dummyCanvas = document.getElementById("dummyCanvas") as HTMLCanvasElement;
@@ -35,13 +39,16 @@
       dummyCanvas.width = width;
       dummyCanvas.height = height;
 
-      setInterval(() => {
+      const callback = () => {
         context?.drawImage(video, 0, 0, width, height);
         webSocket.emit("frame", {
           image: dummyCanvas.toDataURL("image/jpeg"),
           timestamp: Date.now(),
         });
-      }, 1000 / frameRate);
+
+        setTimeout(callback, 1000 / throughput);
+      };
+      setTimeout(callback, 1000 / throughput);
     });
     video.play();
 
@@ -70,6 +77,7 @@
         return;
       } else {
         running = true;
+        throughput = data.throughput;
       }
 
       const image = new Image();
