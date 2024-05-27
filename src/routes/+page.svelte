@@ -61,15 +61,24 @@
     // context?.translate(settings.width, 0);
     // context?.scale(-1, 1);
 
-    webSocket.on("yolo", (data: { image: string, objects: { x1: number, x2: number, y1: number, y2: number, score: number, label: string }[], timestamp: number, throughput: number }) => {
+    let running = false;
+    webSocket.on("yolo", async (data: { image: string, objects: { x1: number, x2: number, y1: number, y2: number, score: number, label: string }[], timestamp: number, throughput: number }) => {
+      if (running) {
+        return;
+      } else {
+        running = true;
+      }
+
       const image = new Image();
       image.src = data.image;
-      image.onload = () => {
+      image.onload = async () => {
         context!.drawImage(image, 0, 0, canvas.width, canvas.height);
 
         context!.strokeStyle = "#00ff00";
         context!.lineWidth = 2;
         context!.font = "16px Arial";
+
+        let hasObject = false;
         for (const object of data.objects) {
           if (object.score < 0.4) {
             continue;
@@ -77,11 +86,22 @@
 
           context!.strokeRect(object.x1 * canvas.width, object.y1 * canvas.height, (object.x2 - object.x1) * canvas.width, (object.y2 - object.y1) * canvas.height);
           context!.fillText(`${object.label} (${(object.score * 100).toFixed(2)}%)`, object.x1 * canvas.width, object.y1 * canvas.height - 5);
+          hasObject = true;
         }
 
         const delay = Date.now() - data.timestamp;
         context!.fillText(`Delay: ${delay}ms`, 10, 20);
         context!.fillText(`Throughput: ${data.throughput.toFixed(2)} FPS`, 10, 40);
+
+        if (hasObject) {
+          const gptResult = await fetch("/api/gpt", {
+            method: "POST",
+            body: data.image,
+          });
+          console.log(await gptResult.text());
+        }
+
+        running = false;
       };
     });
   });
