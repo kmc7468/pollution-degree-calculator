@@ -71,6 +71,10 @@
         context!.lineWidth = 2;
         context!.font = "16px Arial";
         for (const object of data.objects) {
+          if (object.score < 0.4) {
+            continue;
+          }
+
           context!.strokeRect(object.x1 * canvas.width, object.y1 * canvas.height, (object.x2 - object.x1) * canvas.width, (object.y2 - object.y1) * canvas.height);
           context!.fillText(`${object.label} (${(object.score * 100).toFixed(2)}%)`, object.x1 * canvas.width, object.y1 * canvas.height - 5);
         }

@@ -84,8 +84,18 @@ const cocoNames = [
   "toothbrush"
 ];
 
+const trashNames = [
+  "glass",
+  "other",
+  "paper",
+  "cardboard",
+  "foam",
+  "metal",
+  "plastic"
+];
+
 export const loadModel = async () => {
-  return await tf.loadGraphModel("file://yolov5s/model.json");
+  return await tf.loadGraphModel("file://yolov5s-trash/model.json");
 };
 
 export const detect = async (model: tf.GraphModel, data: string) => {
@@ -108,7 +118,7 @@ export const detect = async (model: tf.GraphModel, data: string) => {
   for (let i = 0; i < numDetections; ++i) {
     const [x1, y1, x2, y2] = boxes[0][i];
     const score = scores[0][i];
-    const label = cocoNames[classes[0][i]];
+    const label = trashNames[classes[0][i]];
 
     result.push({ y1, x1, y2, x2, score, label });
   }
