@@ -49,7 +49,8 @@ export const query = async (data: string) => {
         content: [
           {
             type: "text",
-            text: "Assess the pollution degree of wastes in the image."
+            //text: "Assess the pollution degree of wastes in the image."
+            text: "Return with json with key \"pollution\" in int."
           },
           {
             type: "image_url",
