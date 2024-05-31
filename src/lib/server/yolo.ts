@@ -194,7 +194,11 @@ const trashNames = [
   "plastic"
 ];
 
-export type YOLOModel = "yolov5s" | "yolov5s-trash" | "yolov8s-trash";
+export type YOLOModel =
+  "yolov5s" |
+  "yolov5s-trash" |
+  "yolov8s-trash" |
+  "yolov8m-trash";
 
 export const loadModel = async (model: YOLOModel) => {
   const graphModel = await tf.loadGraphModel(`file://models/${model}/model.json`);

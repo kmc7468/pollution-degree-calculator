@@ -5,7 +5,7 @@ import { Server } from "socket.io";
 import { loadModel } from "./yolo";
 
 export const injectSocketIO = async (server: http.Server | http2.Http2SecureServer) => {
-  const model = await loadModel("yolov8s-trash");
+  const model = await loadModel("yolov8m-trash");
   let running = false;
   console.log("ready");
 
