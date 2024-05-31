@@ -32,7 +32,7 @@ export const getPointLogs = (phoneNumber: string) => {
 export const addPointLog = (phoneNumber: string, point: number, trash: string) => {
   const user = users.find((user) => user.phoneNumber === phoneNumber);
   if (!user) {
-    return false;
+    return null;
   }
 
   user.pointLogs.push({
@@ -40,5 +40,6 @@ export const addPointLog = (phoneNumber: string, point: number, trash: string) =
     date: new Date(),
     trash,
   });
-  return true;
+
+  return user.pointLogs.reduce((acc, cur) => acc + cur.point, 0);
 }
