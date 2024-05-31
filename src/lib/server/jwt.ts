@@ -12,3 +12,14 @@ export const generateDetectorToken = () => {
     expiresIn: "3h",
   });
 }
+
+export const verifyDetectorToken = (token: string) => {
+  try {
+    jwt.verify(token, env.JWT_SECRET_KEY, {
+      audience: "detector",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
