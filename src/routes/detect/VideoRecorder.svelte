@@ -62,6 +62,7 @@
   video {
     display: none;
   }
+
   canvas {
     display: none;
   }

@@ -34,7 +34,7 @@
         return;
       }
 
-      context.font = "16px Arial";
+      context.font = "16px Noto Sans KR";
       context.lineWidth = 2;
       context.strokeStyle = "#00FF00";
     };
@@ -121,14 +121,14 @@
         }
 
         if ($page.data.debug) {
+          const delay = Date.now() - payload.timestamp;
+
+          context.fillText(`Delay: ${delay}ms`, fitSize.x + 10, fitSize.y + 20);
+          context.fillText(`Throughput: ${throughput.toFixed(2)} FPS`, fitSize.x + 10, fitSize.y + 40);
           context.fillText(
             new Date(payload.timestamp).toISOString(),
             fitSize.x + 10,
-            fitSize. y + fitSize.height - 20);
-
-          const delay = Date.now() - payload.timestamp;
-          context.fillText(`Delay: ${delay}ms`, fitSize.x + 10, fitSize.y + 20);
-          context.fillText(`Throughput: ${throughput.toFixed(2)} FPS`, fitSize.x + 10, fitSize.y + 40);
+            fitSize. y + fitSize.height - 10);
         }
 
         running = false;
@@ -152,15 +152,24 @@
 </div>
 
 <style>
+  @font-face {
+    font-family: "Noto Sans KR", sans-serif;
+    font-style: normal;
+    src: local("Noto Sans KR"), url(https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap);
+  }
+
   div {
     display: flex;
     flex-direction: column;
     height: 100vh;
   }
+
   h1 {
+    font-family: "Noto Sans KR";
     flex-shrink: 0;
     text-align: center;
   }
+
   canvas {
     flex-grow: 1;
     width: 100%;
