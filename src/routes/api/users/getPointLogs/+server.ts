@@ -1,6 +1,6 @@
 import { error, json } from "@sveltejs/kit";
 
-import { getPointLogs } from "$lib/server/pointDatabase";
+import { getPointLogs } from "$lib/server/database";
 
 /** @type {import("./$types").RequestHandler} */
 export const GET = async ({ url }) => {

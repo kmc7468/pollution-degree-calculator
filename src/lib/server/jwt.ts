@@ -23,3 +23,28 @@ export const verifyDetectorToken = (token: string) => {
     return false;
   }
 }
+
+interface UserTokenPayload {
+  phoneNumber: string;
+}
+
+export const generateUserToken = (phoneNumber: string) => {
+  const payload: UserTokenPayload = {
+    phoneNumber,
+  };
+  return jwt.sign(payload, env.JWT_SECRET_KEY, {
+    audience: "user",
+    expiresIn: "1d",
+  });
+};
+
+export const verifyUserToken = (token: string) => {
+  try {
+    const payload = jwt.verify(token, env.JWT_SECRET_KEY, {
+      audience: "user",
+    }) as UserTokenPayload;
+    return payload.phoneNumber;
+  } catch {
+    return null;
+  }
+};

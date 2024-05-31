@@ -6,6 +6,6 @@ import { verifyDetectorToken } from "$lib/server/jwt.js";
 export const load = async ({ cookies }) => {
   const jwt = cookies.get("auth");
   if (!jwt || !verifyDetectorToken(jwt)) {
-	redirect(302, "/detect/login");
+    redirect(302, "/detect/login");
   }
 };

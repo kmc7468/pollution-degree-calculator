@@ -1,7 +1,7 @@
 import { error, text } from "@sveltejs/kit";
 
-import { query } from "$lib/server/gpt.js";
-import { verifyDetectorToken } from "$lib/server/jwt.js";
+import { query } from "$lib/server/gpt";
+import { verifyDetectorToken } from "$lib/server/jwt";
 
 /** @type {import("./$types").RequestHandler} */
 export const POST = async ({ request, cookies }) => {
