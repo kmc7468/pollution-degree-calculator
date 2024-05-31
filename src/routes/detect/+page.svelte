@@ -1,5 +1,7 @@
 <script lang="ts">
-  import List from "$lib/List.svelte";
+  import { onMount } from "svelte";
+
+  import { page } from "$app/stores";
   import VideoRecorder from "$lib/VideoRecorder.svelte";
   import { webSocket } from "$lib/webSocket";
 
@@ -17,6 +19,29 @@
     throughput: number;
   }
 
+  let canvas: HTMLCanvasElement;
+  let context: CanvasRenderingContext2D | null = null;
+
+  onMount(() => {
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      context = canvas.getContext("2d");
+      if (!context) {
+        return;
+      }
+
+      context.font = "16px Arial";
+      context.lineWidth = 2;
+      context.strokeStyle = "#00FF00";
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+  });
+
   let throughput = 0;
 
   const onFrame = (image: string) => {
@@ -30,24 +55,27 @@
   const onReady = (width: number, height: number, frameRate: number) => {
     throughput = frameRate;
 
-    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext("2d");
-    if (context) {
-      context.font = "16px Arial";
-      context.lineWidth = 2;
-      context.strokeStyle = "#00FF00";
-    } else {
-      throw new Error("Failed to get canvas context");
-    }
-
-    const list = new List({
-      target: document.body,
-    });
     let running = false;
-    let lastAddedTime = 0;
+
+    const calcFitSize = () => {
+      const canvasRatio = canvas.width / canvas.height;
+      const frameRatio = width / height;
+      if (canvasRatio > frameRatio) {
+        return {
+          width: canvas.height * frameRatio,
+          height: canvas.height,
+          x: (canvas.width - canvas.height * frameRatio) / 2,
+          y: 0,
+        };
+      } else {
+        return {
+          width: canvas.width,
+          height: canvas.width / frameRatio,
+          x: 0,
+          y: (canvas.height - canvas.width / frameRatio) / 2,
+        };
+      }
+    };
 
     const onYOLOFrame = async (payload: YOLOPayload) => {
       if (running) {
@@ -60,7 +88,13 @@
       const image = new Image();
       image.src = payload.image;
       image.onload = () => {
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        if (!context) {
+          running = false;
+          return;
+        }
+
+        const fitSize = calcFitSize();
+        context.drawImage(image, fitSize.x, fitSize.y, fitSize.width, fitSize.height);
 
         let hasObject = false;
         for (const object of payload.objects) {
@@ -71,21 +105,30 @@
             continue;
           }
 
-          context.strokeRect(object.x1 * canvas.width, object.y1 * canvas.height, width * canvas.width, height * canvas.height);
-          context.fillText(`${object.label} (${(object.score * 100).toFixed(2)}%)`, object.x1 * canvas.width, object.y1 * canvas.height - 5);
+          context.strokeRect(
+            fitSize.x + object.x1 * fitSize.width,
+            fitSize.y + object.y1 * fitSize.height,
+            width * fitSize.width,
+            height * fitSize.height);
+          context.fillText(
+            `${object.label} (${(object.score * 100).toFixed(2)}%)`,
+            fitSize.x + object.x1 * fitSize.width,
+            fitSize.y + object.y1 * fitSize.height - 5);
+          console.log("hi");
+
           hasObject = true;
         }
 
-        context.fillText(new Date(payload.timestamp).toISOString(), 10, canvas.height - 20);
+        if ($page.data.debug) {
+          context.fillText(
+            new Date(payload.timestamp).toISOString(),
+            fitSize.x + 10,
+            fitSize. y + fitSize.height - 20);
 
-        if (hasObject && Date.now() - lastAddedTime >= 1000) {
-          list.addItem(canvas.toDataURL("image/jpeg"));
-          lastAddedTime = Date.now();
+          const delay = Date.now() - payload.timestamp;
+          context.fillText(`Delay: ${delay}ms`, fitSize.x + 10, fitSize.y + 20);
+          context.fillText(`Throughput: ${throughput.toFixed(2)} FPS`, fitSize.x + 10, fitSize.y + 40);
         }
-
-        const delay = Date.now() - payload.timestamp;
-        context!.fillText(`Delay: ${delay}ms`, 10, 20);
-        context!.fillText(`Throughput: ${throughput.toFixed(2)} FPS`, 10, 40);
 
         running = false;
       };
@@ -101,16 +144,25 @@
 </script>
 
 <div>
-  <h1>분리수거 101</h1>
-
   <VideoRecorder onReady={onReady} onFrame={onFrame} />
-  <canvas id="canvas"></canvas>
+
+  <h1>분리수거 101</h1>
+  <canvas bind:this={canvas}></canvas>
 </div>
 
 <style>
   div {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    height: 100vh;
+  }
+  h1 {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  canvas {
+    flex-grow: 1;
+    width: 100%;
+    height: 0;
   }
 </style>
