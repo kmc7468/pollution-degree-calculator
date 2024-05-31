@@ -2,10 +2,10 @@ import http from "http";
 import http2 from "http2";
 import { Server } from "socket.io";
 
-import { loadModel, detect } from "./yolo";
+import { loadModel } from "./yolo";
 
 export const injectSocketIO = async (server: http.Server | http2.Http2SecureServer) => {
-  const model = await loadModel();
+  const model = await loadModel("yolov8s-trash");
   let running = false;
   console.log("ready");
 
@@ -19,7 +19,7 @@ export const injectSocketIO = async (server: http.Server | http2.Http2SecureServ
         running = true;
 
         const start = Date.now();
-        const result = await detect(model, data.image);
+        const result = await model.detect(data.image);
         const end = Date.now();
 
         socket.emit("yolo", {
