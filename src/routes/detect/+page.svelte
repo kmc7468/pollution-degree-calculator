@@ -2,8 +2,9 @@
   import { onMount } from "svelte";
 
   import { page } from "$app/stores";
-  import VideoRecorder from "$lib/VideoRecorder.svelte";
   import { webSocket } from "$lib/webSocket";
+
+  import VideoRecorder from "./VideoRecorder.svelte";
 
   interface YOLOPayload {
     image: string;
@@ -144,7 +145,7 @@
 </script>
 
 <div>
-  <VideoRecorder onReady={onReady} onFrame={onFrame} />
+  <VideoRecorder width={1280} height={720} onReady={onReady} onFrame={onFrame} />
 
   <h1>분리수거 101</h1>
   <canvas bind:this={canvas}></canvas>
