@@ -2,7 +2,7 @@ import http from "http";
 import http2 from "http2";
 import { Server } from "socket.io";
 
-import { loadModel, detect } from "./yolov5";
+import { loadModel, detect } from "./yolo";
 
 export const injectSocketIO = async (server: http.Server | http2.Http2SecureServer) => {
   const model = await loadModel();

@@ -95,7 +95,7 @@ const trashNames = [
 ];
 
 export const loadModel = async () => {
-  return await tf.loadGraphModel("file://yolov5s-trash/model.json");
+  return await tf.loadGraphModel("file://models/yolov8s-trash/model.json");
 };
 
 export const detect = async (model: tf.GraphModel, data: string) => {
