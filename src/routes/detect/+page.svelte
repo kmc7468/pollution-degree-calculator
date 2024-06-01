@@ -2,46 +2,12 @@
   import { onMount } from "svelte";
 
   import { page } from "$app/stores";
-  import { webSocket } from "$lib/webSocket";
+  import { webSocket, type YoloPayload } from "$lib/webSocket";
 
   import VideoRecorder from "./VideoRecorder.svelte";
+  import YoloCanvas from "./YoloCanvas.svelte";
 
-  interface YOLOPayload {
-    image: string;
-    objects: {
-      x1: number;
-      x2: number;
-      y1: number;
-      y2: number;
-      score: number;
-      label: string;
-    }[];
-    timestamp: number;
-    throughput: number;
-  }
-
-  let canvas: HTMLCanvasElement;
-  let context: CanvasRenderingContext2D | null = null;
-
-  onMount(() => {
-    const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-
-      context = canvas.getContext("2d");
-      if (!context) {
-        return;
-      }
-
-      context.font = "16px Noto Sans KR";
-      context.lineWidth = 2;
-      context.strokeStyle = "#00FF00";
-    };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-  });
+  let canvas: YoloCanvas;
 
   let throughput = 0;
 
@@ -78,61 +44,15 @@
       }
     };
 
-    const onYOLOFrame = async (payload: YOLOPayload) => {
-      if (running) {
-        return;
-      } else {
+    const onYOLOFrame = async (payload: YoloPayload) => {
+      if (!running) {
         running = true;
         throughput = payload.throughput;
-      }
 
-      const image = new Image();
-      image.src = payload.image;
-      image.onload = () => {
-        if (!context) {
+        canvas.renderYoloFrame(payload, () => {
           running = false;
-          return;
-        }
-
-        const fitSize = calcFitSize();
-        context.drawImage(image, fitSize.x, fitSize.y, fitSize.width, fitSize.height);
-
-        let hasObject = false;
-        for (const object of payload.objects) {
-          const width = object.x2 - object.x1;
-          const height = object.y2 - object.y1;
-          const area = width * height;
-          if (object.score < 0.4 || area < 0.2) {
-            continue;
-          }
-
-          context.strokeRect(
-            fitSize.x + object.x1 * fitSize.width,
-            fitSize.y + object.y1 * fitSize.height,
-            width * fitSize.width,
-            height * fitSize.height);
-          context.fillText(
-            `${object.label} (${(object.score * 100).toFixed(2)}%)`,
-            fitSize.x + object.x1 * fitSize.width,
-            fitSize.y + object.y1 * fitSize.height - 5);
-          console.log("hi");
-
-          hasObject = true;
-        }
-
-        if ($page.data.debug) {
-          const delay = Date.now() - payload.timestamp;
-
-          context.fillText(`Delay: ${delay}ms`, fitSize.x + 10, fitSize.y + 20);
-          context.fillText(`Throughput: ${throughput.toFixed(2)} FPS`, fitSize.x + 10, fitSize.y + 40);
-          context.fillText(
-            new Date(payload.timestamp).toISOString(),
-            fitSize.x + 10,
-            fitSize. y + fitSize.height - 10);
-        }
-
-        running = false;
-      };
+        });
+      }
     };
 
     webSocket.emit("start", {
@@ -144,11 +64,13 @@
   };
 </script>
 
-<div>
+<div id="root-container">
   <VideoRecorder width={1280} height={720} onReady={onReady} onFrame={onFrame} />
 
   <h1>분리수거 101</h1>
-  <canvas bind:this={canvas}></canvas>
+  <div id="canvas-container">
+    <YoloCanvas bind:this={canvas} debug={$page.data.debug} />
+  </div>
 </div>
 
 <style>
@@ -158,7 +80,7 @@
     src: local("Noto Sans KR"), url(https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap);
   }
 
-  div {
+  #root-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -170,7 +92,7 @@
     text-align: center;
   }
 
-  canvas {
+  #canvas-container {
     flex-grow: 1;
     width: 100%;
     height: 0;
