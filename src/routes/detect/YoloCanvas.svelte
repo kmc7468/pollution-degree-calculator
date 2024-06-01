@@ -58,6 +58,8 @@
     context!.fillText(text, x + 4, y - 4);
   };
 
+  let avgUtilization = 0;
+
   export const renderYoloFrame = (payload: YoloPayload, callback: () => void) => {
     const context = canvas.getContext("2d");
     if (!context) {
@@ -126,12 +128,17 @@
       }
 
       if (debug) {
+        avgUtilization = 0.5 * avgUtilization + 0.5 * payload.utilization;
+
         fillTextWithRect(
           `Delay: ${Date.now() - payload.timestamp}ms`, "#000000", "#FFFFFF",
           x + 5, y + 25, 20);
         fillTextWithRect(
           `Throughput: ${payload.throughput.toFixed(2)} FPS`, "#000000", "#FFFFFF",
           x + 5, y + 45, 20);
+        fillTextWithRect(
+          `Utilization: ${(payload.utilization * 100).toFixed(2)}% (AVG ${(avgUtilization * 100).toFixed(2)}%)`, "#000000", "#FFFFFF",
+          x + 5, y + 65, 20);
         fillTextWithRect(
           new Date(payload.timestamp).toISOString(), "#000000", "#FFFFFF",
           x + 5, y + height - 5, 20);

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-
   import { page } from "$app/stores";
   import { webSocket, type YoloPayload } from "$lib/webSocket";
 
@@ -23,26 +21,6 @@
     throughput = frameRate;
 
     let running = false;
-
-    const calcFitSize = () => {
-      const canvasRatio = canvas.width / canvas.height;
-      const frameRatio = width / height;
-      if (canvasRatio > frameRatio) {
-        return {
-          width: canvas.height * frameRatio,
-          height: canvas.height,
-          x: (canvas.width - canvas.height * frameRatio) / 2,
-          y: 0,
-        };
-      } else {
-        return {
-          width: canvas.width,
-          height: canvas.width / frameRatio,
-          x: 0,
-          y: (canvas.height - canvas.width / frameRatio) / 2,
-        };
-      }
-    };
 
     const onYOLOFrame = async (payload: YoloPayload) => {
       if (!running) {
