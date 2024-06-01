@@ -94,13 +94,48 @@
                         timeout = null;
                       }
                     };
+                    const addPoint = (point: number, needTimeout: boolean) => {
+                      const phoneNumber = prompt("포인트를 적립할 전화번호를 입력해 주세요.");
+                      if (!phoneNumber) {
+                        if (needTimeout) {
+                          timeout = setTimeout(reset, 10000);
+                        }
+                        return;
+                      }
+
+                      fetch("/api/users/addPointReceivedLog", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          phoneNumber,
+                          point,
+                        }),
+                      }).then(response => {
+                        if (response.status === 200) {
+                          response.text().then(text => {
+                            alert(`포인트가 적립되었어요. 지금까지 ${text} 포인트를 모았어요.`);
+                            reset();
+                          });
+                        } else {
+                          alert("포인트 적립에 실패했어요. 전화번호가 올바른지 다시 확인해 주세요.");
+                          addPoint(point, needTimeout);
+                        }
+                      });
+                    };
 
                     if (json.pollution <= 30 && state === "detected") {
                       title = `오염도가 낮아요! (${json.pollution}%) 포인트를 받을 수 있어요.`;
                       description = json.description;
 
                       canvas.drawButton(width, height, "포인트 적립하기", targetObject!.object, () => {
-                        // TODO
+                        if (timeout) {
+                          clearTimeout(timeout);
+                          timeout = null;
+                        }
+
+                        addPoint(5, true);
                       }, reset);
                       timeout = setTimeout(reset, 10000);
                     } else if (json.pollution <= 30 && state === "detected2") {
@@ -108,7 +143,7 @@
                       description = json.description;
 
                       canvas.drawButton(width, height, "포인트 적립하기", targetObject!.object, () => {
-                        // TODO
+                        addPoint(10, false);
                       }, reset);
                     } else if (state === "detected") {
                       title = `오염도가 높아요! (${json.pollution}%) 세척 후 버리면 포인트를 드려요.`;

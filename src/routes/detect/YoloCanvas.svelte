@@ -58,7 +58,14 @@
     context!.fillText(text, x + 4, y - 4);
   };
 
+  let onMouseUp: ((event: MouseEvent) => void) | null = null;
+
   export const renderYoloFrame = (payload: YoloPayload, callback: (candidateObject: YoloObject | null) => void) => {
+    if (onMouseUp) {
+      canvas.removeEventListener("mouseup", onMouseUp);
+      onMouseUp = null;
+    }
+
     const image = new Image();
     image.src = payload.image;
     image.onload = () => {
@@ -160,9 +167,7 @@
 
     context!.font = "16px Noto Sans KR";
 
-    const onMouseUp = ({ offsetX, offsetY }: MouseEvent) => {
-      canvas.removeEventListener("mouseup", onMouseUp);
-
+    onMouseUp = ({ offsetX, offsetY }: MouseEvent) => {
       if (offsetX >= x + candidateObject.x1 * width &&
           offsetX <= x + candidateObject.x2 * width &&
           offsetY >= y + candidateObject.y1 * height &&
