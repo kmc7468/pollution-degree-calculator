@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { webSocket, type YoloPayload } from "$lib/webSocket";
+  import { webSocket, type YoloObject, type YoloPayload } from "$lib/webSocket";
 
   import VideoRecorder from "./VideoRecorder.svelte";
   import YoloCanvas from "./YoloCanvas.svelte";
@@ -21,13 +21,46 @@
     throughput = frameRate;
 
     let running = false;
+    let targetObject: {
+      object: YoloObject;
+      timestamp: number;
+      miss: number;
+      hit: number;
+    } | null = null;
 
     const onYOLOFrame = async (payload: YoloPayload) => {
       if (!running) {
         running = true;
         throughput = payload.throughput;
 
-        canvas.renderYoloFrame(payload, () => {
+        canvas.renderYoloFrame(payload, (candidateObject: YoloObject | null) => {
+          if (!targetObject && candidateObject) {
+            targetObject = {
+              object: candidateObject,
+              timestamp: Date.now(),
+              miss: 0,
+              hit: 1,
+            };
+          } else if (targetObject) {
+            if (!candidateObject || targetObject.object.label !== candidateObject.label) {
+              targetObject.miss += 1;
+            } else {
+              targetObject.hit += 1;
+            }
+
+            if (targetObject.timestamp + 1000 <= Date.now()) {
+              const hitRate = targetObject.hit / (targetObject.hit + targetObject.miss);
+              if (hitRate >= 0.6) {
+                alert("ASDF");
+                targetObject = null;
+                // TODO
+              } else {
+                console.log(`nono ${hitRate}`);
+                targetObject = null;
+              }
+            }
+          }
+
           running = false;
         });
       }

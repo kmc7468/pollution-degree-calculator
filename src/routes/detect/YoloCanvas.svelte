@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import { type YoloPayload } from "$lib/webSocket";
+  import type { YoloObject, YoloPayload } from "$lib/webSocket";
 
   export let debug = false;
 
@@ -58,10 +58,10 @@
     context!.fillText(text, x + 4, y - 4);
   };
 
-  export const renderYoloFrame = (payload: YoloPayload, callback: () => void) => {
+  export const renderYoloFrame = (payload: YoloPayload, callback: (candidateObject: YoloObject | null) => void) => {
     const context = canvas.getContext("2d");
     if (!context) {
-      callback();
+      callback(null);
       throw new Error("Failed to get canvas context");
     }
 
@@ -69,7 +69,7 @@
     image.src = payload.image;
     image.onload = () => {
       if (!context) {
-        callback();
+        callback(null);
         return;
       }
 
@@ -92,9 +92,9 @@
         };
       });
 
-      let isWhiteUsed = false;
+      let candidateObject: YoloObject | null = null;
       for (const object of objects.sort((a, b) => b.score2 - a.score2)) {
-        const candidate = !isWhiteUsed && object.score >= 0.3 && object.area >= 0.05;
+        const candidate = !candidateObject && object.score >= 0.3 && object.area >= 0.05;
         if (!candidate) {
           if (debug) {
             context.lineWidth = 2;
@@ -118,7 +118,7 @@
           object.height * height);
 
         if (candidate) {
-          isWhiteUsed = true;
+          candidateObject = object;
         } else if (!candidate && debug) {
           context.lineWidth = 4;
           context.strokeStyle = "#FFFFFF";
@@ -137,7 +137,7 @@
           x + 5, y + height - 5, 20);
       }
 
-      callback();
+      callback(candidateObject);
     };
   };
 </script>
