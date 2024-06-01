@@ -9,17 +9,13 @@ export const injectSocketIO = async (server: http.Server | http2.Http2SecureServ
 
   const io = new Server(server);
   io.on("connection", (socket) => {
-    let received = 0;
     let running = false;
 
     socket.on("start", (data) => {
       console.log(data);
     });
     socket.on("frame", async (data: { image: string, timestamp: number }) => {
-      const utilization = 1 / ++received;
-
       if (!running) {
-        received = 0;
         running = true;
 
         const start = Date.now();
@@ -31,7 +27,6 @@ export const injectSocketIO = async (server: http.Server | http2.Http2SecureServ
           objects: result,
           timestamp: data.timestamp,
           throughput: 1000 / (end - start),
-          utilization,
         });
 
         running = false;

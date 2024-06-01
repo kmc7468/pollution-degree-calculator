@@ -14,5 +14,4 @@ export interface YoloPayload {
   }[];
   timestamp: number;
   throughput: number;
-  utilization: number;
 }
