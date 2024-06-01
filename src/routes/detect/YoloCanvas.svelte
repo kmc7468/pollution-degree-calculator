@@ -59,12 +59,6 @@
   };
 
   export const renderYoloFrame = (payload: YoloPayload, callback: (candidateObject: YoloObject | null) => void) => {
-    const context = canvas.getContext("2d");
-    if (!context) {
-      callback(null);
-      throw new Error("Failed to get canvas context");
-    }
-
     const image = new Image();
     image.src = payload.image;
     image.onload = () => {
@@ -109,7 +103,7 @@
           : `${object.label} (${(object.score * 100).toFixed(2)}%)`;
         fillTextWithRect(
           text, "#000000", context.strokeStyle as string,
-          x + object.x1 * width, y + object.y1 * height, 20);
+          x + object.x1 * width - 2, y + object.y1 * height, 20);
 
         context.strokeRect(
           x + object.x1 * width,
@@ -139,6 +133,47 @@
 
       callback(candidateObject);
     };
+  };
+
+  export const drawButton = (imageWidth: number, imageHeight: number, text: string, candidateObject: YoloObject, callback: () => void, reset: () => void) => {
+    const { width, height, x, y } = calcFitSize(imageWidth, imageHeight);
+
+    const objectWidth = candidateObject.x2 - candidateObject.x1;
+    const objectHeight = candidateObject.y2 - candidateObject.y1;
+
+    context!.fillStyle = "#FFFFFF80";
+    context!.fillRect(
+      x + candidateObject.x1 * width,
+      y + candidateObject.y1 * height,
+      objectWidth * width,
+      objectHeight * height);
+
+    const textWidth = context!.measureText(text).width;
+
+    context!.fillStyle = "#000000";
+    context!.font = "bold 32px Noto Sans KR";
+    context!.globalAlpha = 1;
+    context!.fillText(
+      text,
+      x + candidateObject.x1 * width + objectWidth * width / 2 - textWidth,
+      y + candidateObject.y1 * height + objectHeight * height / 2 + 5);
+
+    context!.font = "16px Noto Sans KR";
+
+    const onMouseUp = ({ offsetX, offsetY }: MouseEvent) => {
+      canvas.removeEventListener("mouseup", onMouseUp);
+
+      if (offsetX >= x + candidateObject.x1 * width &&
+          offsetX <= x + candidateObject.x2 * width &&
+          offsetY >= y + candidateObject.y1 * height &&
+          offsetY <= y + candidateObject.y2 * height) {
+
+        callback();
+      } else {
+        reset();
+      }
+    };
+    canvas.addEventListener("mouseup", onMouseUp);
   };
 </script>
 

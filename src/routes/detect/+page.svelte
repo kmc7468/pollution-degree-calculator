@@ -83,22 +83,84 @@
                     const right = text.lastIndexOf("}") + 1;
                     const json = JSON.parse(text.substring(left, right));
 
-                    if (json.pollution <= 30) {
+                    const reset = () => {
+                      state = "detecting";
+                      title = "쓰레기를 찾고 있어요.";
+                      description = "카메라에 쓰레기를 보여주세요.";
+                      targetObject = null;
+
+                      if (timeout) {
+                        clearTimeout(timeout);
+                        timeout = null;
+                      }
+                    };
+
+                    if (json.pollution <= 30 && state === "detected") {
                       title = `오염도가 낮아요! (${json.pollution}%) 포인트를 받을 수 있어요.`;
                       description = json.description;
-                    } else {
+
+                      canvas.drawButton(width, height, "포인트 적립하기", targetObject!.object, () => {
+                        // TODO
+                      }, reset);
+                      timeout = setTimeout(reset, 10000);
+                    } else if (json.pollution <= 30 && state === "detected2") {
+                      title = `오염도가 낮아졌어요! (${json.pollution}%) 포인트를 받을 수 있어요.`;
+                      description = json.description;
+
+                      canvas.drawButton(width, height, "포인트 적립하기", targetObject!.object, () => {
+                        // TODO
+                      }, reset);
+                    } else if (state === "detected") {
                       title = `오염도가 높아요! (${json.pollution}%) 세척 후 버리면 포인트를 드려요.`;
                       description = json.description;
+
+                      canvas.drawButton(width, height, "세척하고 다시 시도하기", targetObject!.object, () => {
+                        state = "detecting2";
+                        title = "쓰레기를 세척해 주세요.";
+                        description = "세척이 완료된 쓰레기를 카메라에 보여주세요. 오염도가 이전보다 낮아져야 포인트를 받을 수 있어요.";
+                        targetObject = null;
+
+                        if (timeout) {
+                          clearTimeout(timeout);
+                          timeout = null;
+                        }
+                      }, reset);
+                      timeout = setTimeout(reset, 10000);
+                    } else {
+                      title = `오염도가 아직도 높아요! (${json.pollution}%) 조금 더 깨끗이 세척해 주세요.`;
+                      description = json.description;
+
+                      canvas.drawButton(width, height, "다시 시도하기", targetObject!.object, () => {
+                        state = "detecting2";
+                        title = "쓰레기를 세척해 주세요.";
+                        description = "세척이 완료된 쓰레기를 카메라에 보여주세요. 오염도가 이전보다 낮아져야 포인트를 받을 수 있어요.";
+                        targetObject = null;
+
+                        if (timeout) {
+                          clearTimeout(timeout);
+                          timeout = null;
+                        }
+                      }, reset);
                     }
+
+                    state = state === "detected" ? "gptDone" : "gptDone2";
                   }).catch(() => {
                     if (retry) {
                       state = state === "detected" ? "detecting" : "detecting2";
-                      title = "오류가 발생했어요.";
-                      description = "오염도를 분석하는 중에 알 수 없는 오류가 발생했어요.";
+                      title = "알 수 없는 오류가 발생했어요.";
+                      description = "오염도를 분석하는데 실패했어요. 다시 시도해주세요.";
 
+                      targetObject = null;
                       timeout = setTimeout(() => {
-                        title = "분리수거 101";
-                        description = "쓰레기를 찾고 있어요. 카메라에 쓰레기를 보여주세요.";
+                        if (state === "detected") {
+                          title = "쓰레기를 찾고 있어요.";
+                          description = "카메라에 쓰레기를 보여주세요.";
+                        } else {
+                          title = "쓰레기를 세척해 주세요.";
+                          description = "세척이 완료된 쓰레기를 카메라에 보여주세요. 오염도가 이전보다 낮아져야 포인트를 받을 수 있어요.";
+                        }
+
+                        timeout = null;
                       }, 5000);
                     } else {
                       queryGpt(true);
@@ -106,8 +168,6 @@
                   });
                 };
                 queryGpt(false);
-
-                targetObject = null;
               } else if (hitRate < 0.6) {
                 targetObject = null;
               }

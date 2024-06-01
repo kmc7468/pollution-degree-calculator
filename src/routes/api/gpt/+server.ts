@@ -12,5 +12,11 @@ export const POST = async ({ request, cookies }) => {
     error(403, "Forbidden");
   }
 
-  return text(await query(await request.text()) ?? "");
+  const result = await query(await request.text());
+  if (result) {
+    console.log(result);
+    return text(result);
+  } else {
+    error(500, "Internal Server Error");
+  }
 };
