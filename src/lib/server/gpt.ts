@@ -130,19 +130,12 @@ export const query = async (data: string) => {
       },
       {
         role: "user",
-        content: [
-          // {
-          //   type: "text",
-          //   //text: "Assess the pollution degree of wastes in the image."
-          //   text: "Return with json with key \"pollution\" in int."
-          // },
-          {
-            type: "image_url",
-            image_url: {
-              url: data
-            }
+        content: [{
+          type: "image_url",
+          image_url: {
+            url: data
           }
-        ]
+        }]
       }
     ]
   });

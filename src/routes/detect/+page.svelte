@@ -5,15 +5,24 @@
   import VideoRecorder from "./VideoRecorder.svelte";
   import YoloCanvas from "./YoloCanvas.svelte";
 
+  type State =
+    "detecting" | "detected" | "gptDone" |
+    "detecting2" | "detected2" | "gptDone2";
+
+  let state: State = "detecting";
+  let title = "분리수거 101";
+  let description = "쓰레기를 찾고 있어요. 카메라에 쓰레기를 보여주세요.";
   let canvas: YoloCanvas;
 
   let throughput = 0;
 
   const onFrame = (image: string) => {
-    webSocket.emit("frame", {
-      image,
-      timestamp: Date.now(),
-    });
+    if (state === "detecting" || state === "detecting2") {
+      webSocket.emit("frame", {
+        image,
+        timestamp: Date.now(),
+      });
+    }
     return throughput;
   };
 
@@ -22,20 +31,23 @@
 
     let running = false;
     let targetObject: {
+      image: string;
       object: YoloObject;
       timestamp: number;
       miss: number;
       hit: number;
     } | null = null;
+    let timeout: NodeJS.Timeout | null = null;
 
     const onYOLOFrame = async (payload: YoloPayload) => {
-      if (!running) {
+      if (!running && (state === "detecting" || state === "detecting2")) {
         running = true;
         throughput = payload.throughput;
 
         canvas.renderYoloFrame(payload, (candidateObject: YoloObject | null) => {
           if (!targetObject && candidateObject) {
             targetObject = {
+              image: payload.image,
               object: candidateObject,
               timestamp: Date.now(),
               miss: 0,
@@ -45,17 +57,58 @@
             if (!candidateObject || targetObject.object.label !== candidateObject.label) {
               targetObject.miss += 1;
             } else {
+              targetObject.image = payload.image;
+              targetObject.object = candidateObject;
               targetObject.hit += 1;
             }
 
             if (targetObject.timestamp + 1000 <= Date.now()) {
               const hitRate = targetObject.hit / (targetObject.hit + targetObject.miss);
-              if (hitRate >= 0.6) {
-                alert("ASDF");
+              if (hitRate >= 0.6 && candidateObject?.label === targetObject.object.label) {
+                state = state === "detecting" ? "detected" : "detected2";
+                title = `${targetObject.object.label}을(를) 발견했어요.`;
+                description = "오염도를 분석하고 있어요. 잠시만 기다려 주세요.";
+
+                if (timeout) {
+                  clearTimeout(timeout);
+                  timeout = null;
+                }
+
+                const queryGpt = (retry: boolean) => {
+                  fetch("/api/gpt", {
+                    method: "POST",
+                    body: payload.image,
+                  }).then(response => response.text()).then(text => {
+                    const left = text.indexOf("{");
+                    const right = text.lastIndexOf("}") + 1;
+                    const json = JSON.parse(text.substring(left, right));
+
+                    if (json.pollution <= 30) {
+                      title = `오염도가 낮아요! (${json.pollution}%) 포인트를 받을 수 있어요.`;
+                      description = json.description;
+                    } else {
+                      title = `오염도가 높아요! (${json.pollution}%) 세척 후 버리면 포인트를 드려요.`;
+                      description = json.description;
+                    }
+                  }).catch(() => {
+                    if (retry) {
+                      state = state === "detected" ? "detecting" : "detecting2";
+                      title = "오류가 발생했어요.";
+                      description = "오염도를 분석하는 중에 알 수 없는 오류가 발생했어요.";
+
+                      timeout = setTimeout(() => {
+                        title = "분리수거 101";
+                        description = "쓰레기를 찾고 있어요. 카메라에 쓰레기를 보여주세요.";
+                      }, 5000);
+                    } else {
+                      queryGpt(true);
+                    }
+                  });
+                };
+                queryGpt(false);
+
                 targetObject = null;
-                // TODO
-              } else {
-                console.log(`nono ${hitRate}`);
+              } else if (hitRate < 0.6) {
                 targetObject = null;
               }
             }
@@ -78,7 +131,10 @@
 <div id="root-container">
   <VideoRecorder width={1280} height={720} onReady={onReady} onFrame={onFrame} />
 
-  <h1>분리수거 101</h1>
+  <div id="text-container">
+    <h1>{title}</h1>
+    <p>{description}</p>
+  </div>
   <div id="canvas-container">
     <YoloCanvas bind:this={canvas} debug={$page.data.debug} />
   </div>
@@ -97,9 +153,18 @@
     height: 100vh;
   }
 
+  #text-container {
+    flex-shrink: 0;
+  }
+
   h1 {
     font-family: "Noto Sans KR";
-    flex-shrink: 0;
+    text-align: center;
+  }
+
+  p {
+    font-family: "Noto Sans KR";
+    font-size: 16pt;
     text-align: center;
   }
 
