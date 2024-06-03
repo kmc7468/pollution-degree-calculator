@@ -111,6 +111,10 @@
                         body: JSON.stringify({
                           phoneNumber,
                           point,
+                          trash: {
+                            name: targetObject!.object.label,
+                            image: targetObject!.image,
+                          }
                         }),
                       }).then(response => {
                         if (response.status === 200) {

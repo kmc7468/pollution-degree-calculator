@@ -5,18 +5,10 @@ export interface Trash {
   image: string;
 }
 
-export interface Item {
-  name: string;
-  point: number;
-  image: string;
-  description: string;
-};
-
 interface PointLog {
   deltaPoint: number;
   date: Date;
   trash?: Trash;
-  item?: Item;
 }
 
 interface User {
@@ -30,7 +22,6 @@ const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 
 const users: User[] = [];
-const items: Item[] = [];
 
 export const registerUser = (phoneNumber: string, password: string, name: string) => {
   if (users.find((user) => user.phoneNumber === phoneNumber)) {
@@ -45,6 +36,15 @@ export const registerUser = (phoneNumber: string, password: string, name: string
   });
 
   return true;
+};
+
+export const loginUser = (phoneNumber: string, password: string) => {
+  const user = users.find((user) => user.phoneNumber === phoneNumber);
+  if (!user) {
+    return false;
+  }
+
+  return bcrypt.compareSync(password, user.password);
 };
 
 export const getPointLogs = (phoneNumber: string) => {
@@ -64,27 +64,4 @@ export const addPointReceivedLog = (phoneNumber: string, point: number, trash: T
   });
 
   return user.pointLogs.reduce((acc, cur) => acc + cur.deltaPoint, 0);
-};
-
-export const addPointUsedLog = (phoneNumber: string, item: Item) => {
-  const user = users.find((user) => user.phoneNumber === phoneNumber);
-  if (!user) {
-    return null;
-  }
-
-  user.pointLogs.push({
-    deltaPoint: -item.point,
-    date: new Date(),
-    item,
-  });
-
-  return user.pointLogs.reduce((acc, cur) => acc + cur.deltaPoint, 0);
-}
-
-export const getItems = () => {
-  return items;
-};
-
-export const addItem = (item: Item) => {
-  items.push(item);
 };
