@@ -25,8 +25,12 @@
   <div class="collapse navbar-collapse" id="navcol-1">
     <ul class="navbar-nav ms-auto">
       <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+      {#if data.isLogin}
+        <li class="nav-item"><a class="nav-link" href="/my">My</a></li>
+      {:else}
+        <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+      {/if}
     </ul>
   </div>
 </div>
@@ -39,13 +43,11 @@
       <p>깨끗한 쓰레기를 버릴 때마다 포인트를 드려요.<br>여러분과 지구를 위해, 저희 분리수거 101 팀이 도울게요.</p>
       {#if data.isLogin}
         <p>이미 로그인 하셨네요!</p>
-        <a class="btn btn-outline-light btn-lg" href="/mypage">마이 페이지로 이동하기</a>
-      {/if}
-      {#if !data.isLogin}
+        <a class="btn btn-outline-light btn-lg" href="/my">마이 페이지로 이동하기</a>
+      {:else}
         <p>로그인 후 환경 보호에 동참해 보세요.</p>
         <a class="btn btn-outline-light btn-lg" href="/login">로그인</a>
       {/if}
-      <!-- <button class="btn btn-outline-light btn-lg" type="button"></button> -->
     </div>
   </section>
 </main>

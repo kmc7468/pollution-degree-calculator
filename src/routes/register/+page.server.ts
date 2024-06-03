@@ -8,7 +8,7 @@ import { generateUserToken, verifyUserToken } from "$lib/server/jwt";
 export const load = async ({ cookies }) => {
   const jwt = cookies.get("auth");
   if (jwt && verifyUserToken(jwt)) {
-    redirect(302, "/mypage");
+    redirect(302, "/my");
   }
 };
 
@@ -46,7 +46,7 @@ export const actions = {
       cookies.set("auth", generateUserToken(phoneNumber), {
         path: "/",
       });
-      redirect(302, "/mypage");
+      redirect(302, "/my");
     } else {
       return fail(409, {
         name,

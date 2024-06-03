@@ -24,7 +24,7 @@
 
 <nav class="navbar navbar-expand-lg fixed-top bg-body clean-navbar">
 <div class="container">
-  <a class="navbar-brand logo" href="#">분리수거 101</a>
+  <a class="navbar-brand logo" href="/">분리수거 101</a>
   <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
     <span class="visually-hidden">Toggle navigation</span>
     <span class="navbar-toggler-icon"></span>
@@ -32,8 +32,7 @@
   <div class="collapse navbar-collapse" id="navcol-1">
     <ul class="navbar-nav ms-auto">
       <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+      <li class="nav-item"><a class="nav-link active" href="/my">My</a></li>
     </ul>
   </div>
 </div>
