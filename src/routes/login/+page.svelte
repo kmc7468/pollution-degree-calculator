@@ -19,7 +19,7 @@
 
 <nav class="navbar navbar-expand-lg fixed-top bg-body clean-navbar">
 <div class="container">
-  <a class="navbar-brand logo" href="/">분리수거 101</a>
+  <a class="navbar-brand logo" href="#">분리수거 101</a>
   <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
     <span class="visually-hidden">Toggle navigation</span>
     <span class="navbar-toggler-icon"></span>
@@ -51,8 +51,7 @@
     <div class="mb-3">
       <label class="form-label" for="password">비밀번호</label>
       <input class="form-control" type="password" data-bs-theme="light"
-             name="password" value={form?.password ?? ""}
-             required minlength=4>
+             name="password" required minlength=4>
     </div>
     {#if form?.message}
       <div class="alert alert-danger" role="alert">{form.message}</div>
