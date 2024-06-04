@@ -19,7 +19,7 @@
 
 <nav class="navbar navbar-expand-lg fixed-top bg-body clean-navbar">
 <div class="container">
-  <a class="navbar-brand logo" href="/">분리수거 101</a>
+  <a class="navbar-brand logo" href="/">분리배출 101</a>
   <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
     <span class="visually-hidden">Toggle navigation</span>
     <span class="navbar-toggler-icon"></span>
@@ -39,7 +39,7 @@
 <div class="container">
   <div class="block-heading">
     <h2 class="text-info">회원가입</h2>
-    <p>포인트를 적립하려면 분리수거 101에 가입해야 해요.</p>
+    <p>포인트를 적립하려면 분리배출 101에 가입해야 해요.</p>
   </div>
   <form method="POST">
     <div class="mb-3">

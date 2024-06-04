@@ -10,7 +10,7 @@
     "detecting2" | "detected2" | "gptDone2";
 
   let state: State = "detecting";
-  let title = "분리수거 101";
+  let title = "분리배출 101";
   let description = "쓰레기를 찾고 있어요. 카메라에 쓰레기를 보여주세요.";
   let canvas: YoloCanvas;
 
@@ -85,8 +85,8 @@
 
                     const reset = () => {
                       state = "detecting";
-                      title = "쓰레기를 찾고 있어요.";
-                      description = "카메라에 쓰레기를 보여주세요.";
+                      title = "분리배출 101";
+                      description = "쓰레기를 찾고 있어요. 카메라에 쓰레기를 보여주세요.";
                       targetObject = null;
 
                       if (timeout) {

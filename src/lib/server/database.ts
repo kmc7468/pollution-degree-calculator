@@ -24,12 +24,12 @@ const salt = bcrypt.genSaltSync(saltRounds);
 const users: User[] = [];
 
 export const registerUser = (phoneNumber: string, password: string, name: string) => {
-  if (users.find((user) => user.phoneNumber === phoneNumber)) {
+  if (users.find((user) => user.phoneNumber === phoneNumber.replaceAll("-", ""))) {
     return false;
   }
 
   users.push({
-    phoneNumber,
+    phoneNumber: phoneNumber.replaceAll("-", ""),
     password: bcrypt.hashSync(password, salt),
     name,
     pointLogs: [],
@@ -39,7 +39,7 @@ export const registerUser = (phoneNumber: string, password: string, name: string
 };
 
 export const loginUser = (phoneNumber: string, password: string) => {
-  const user = users.find((user) => user.phoneNumber === phoneNumber);
+  const user = users.find((user) => user.phoneNumber === phoneNumber.replaceAll("-", ""));
   if (!user) {
     return false;
   }
@@ -47,12 +47,16 @@ export const loginUser = (phoneNumber: string, password: string) => {
   return bcrypt.compareSync(password, user.password);
 };
 
+export const getUserName = (phoneNumber: string) => {
+  return users.find((user) => user.phoneNumber === phoneNumber.replaceAll("-", ""))?.name;
+}
+
 export const getPointLogs = (phoneNumber: string) => {
-  return users.find((user) => user.phoneNumber === phoneNumber)?.pointLogs;
+  return users.find((user) => user.phoneNumber === phoneNumber.replaceAll("-", ""))?.pointLogs;
 };
 
 export const addPointReceivedLog = (phoneNumber: string, point: number, trash: Trash) => {
-  const user = users.find((user) => user.phoneNumber === phoneNumber);
+  const user = users.find((user) => user.phoneNumber === phoneNumber.replaceAll("-", ""));
   if (!user) {
     return null;
   }

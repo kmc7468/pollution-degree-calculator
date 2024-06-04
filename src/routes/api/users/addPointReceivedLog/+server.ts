@@ -13,7 +13,7 @@ export const POST = async ({ request, cookies }) => {
   }
 
   const { phoneNumber, point, trash } = await request.json();
-  const totalPoint = addPointReceivedLog(phoneNumber.replaceAll("-", ""), point, trash);
+  const totalPoint = addPointReceivedLog(phoneNumber, point, trash);
   if (totalPoint === null) {
     error(400, "User not found");
   }

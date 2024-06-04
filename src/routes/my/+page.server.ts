@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 
-import { getPointLogs } from "$lib/server/database";
+import { getUserName, getPointLogs } from "$lib/server/database";
 import { verifyUserToken } from "$lib/server/jwt";
 
 /** @type {import("./$types").PageServerLoad} */
@@ -12,6 +12,7 @@ export const load = async ({ cookies }) => {
   }
 
   return {
-    pointLogs: getPointLogs(phoneNumber.replaceAll("-", "")),
+    name: getUserName(phoneNumber),
+    pointLogs: getPointLogs(phoneNumber),
   };
 };
